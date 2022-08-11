@@ -14,13 +14,11 @@ const modalUserEmail = document.querySelector("#modal-user-email");
 fetch(`${apiUrl}/posts`)
     .then(response => response.json())
     .then(posts => {
-        let num = 1;
         posts.forEach(post => {
-
             let divPosts = document.createElement("div");
             divPosts.setAttribute("id", "div-posts");
             divPosts.setAttribute("data-bs-toggle", "modal");
-            divPosts.setAttribute("data-bs-target", `#exampleModal${num}`);
+            divPosts.setAttribute("data-bs-target", `#post-${post.id}`);
 
             let pTitle = document.createElement("p");
             pTitle.setAttribute("class", "pTitle");
@@ -34,36 +32,72 @@ fetch(`${apiUrl}/posts`)
             pTitle.appendChild(document.createTextNode(`${post.title}`));
             pBody.appendChild(document.createTextNode(`${post.body}`));
 
-            modalHtml = 
-            `<div class="modal fade" id="exampleModal${num}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
+            fetch(`${apiUrl}/users`)
+                .then(response => response.json())
+                .then(users => {
+                    users.forEach(user => {
+                        
+                        fetch(`${apiUrl}/comments`)                    
+                            .then(response => response.json())
+                            .then(comments => {
+                                comments.forEach(comment => {
+                                    
+                                    if (post.userId === user.id) {  
+                                        modalHtml = 
+                                        `<div class="modal fade" id="post-${post.id}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                    
+                                                    <div class="modal-header">
+                                                        <h1 class="modal-title" id="exampleModalLabel">${post.title}</h1>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                    
+                                                    <div class="modal-body">
+                                                        <p id="modal-post-body">${post.body}</p>
+                                                        <div>
+                                                            <h2 id="modal-user-title">User</h2>
+                                                            <p id="modal-username">${user.username}</p>
+                                                            <p id="modal-user-email">${user.email}</p>
+                                                        </div>
+                                                    </div>
+                    
+                                                    <div class="modal-footer comments-section">
+                                                        <h2>Comments</h2>
+                                                        <button type="button" class="btn btn-primary">Load Comments</button>
+                                                        <p>${comment.name}</p>
+                                                        <p>${comment.body}</p>
+                                                        <p>${comment.email}</p>
+                                                    </div>
+                    
+                                                </div>
+                                            </div>
+                                        </div>`;
+                                        divPosts.insertAdjacentHTML("beforeend", modalHtml);
+                                    } 
+                                    
+                                    function loadComments() {
+                                        const commentsSection = document.querySelector(".comments-section");
+                                        let pCommentName = document.createElement("p")
+                                        let pCommentBody = document.createElement("p")
+                                        let pCommentEmail = document.createElement("p")
 
-                        <div class="modal-header">
-                            <h1 class="modal-title" id="exampleModalLabel">${post.title}</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
+                                        if (post.id === comment.postId) {
+                                            commentsSection.appendChild(pCommentName)
+                                            commentsSection.appendChild(pCommentBody)
+                                            commentsSection.appendChild(pCommentEmail)
 
-                        <div class="modal-body">
-                            <p id="modal-post-body">${post.body}</p>
-                            <div>
-                                <h2 id="modal-user-title">User</h2>
-                                <p id="modal-username">alex123</p>
-                                <p id="modal-user-email"></p>alex@gmail.com</p>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer comments-section">
-                            <h2>Comments</h2>
-                            <button type="button" class="btn btn-primary">Load Comments</button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>`;
-            divPosts.insertAdjacentHTML("afterbegin", modalHtml) ;
-
-            num++;
-            
+                                            pCommentName.appendChild(document.createTextNode(`${comment.name}`));
+                                            pCommentName.appendChild(document.createTextNode(`${comment.body}`));
+                                            pCommentName.appendChild(document.createTextNode(`${comment.email}`));
+                                        }
+                                    }
+                                });   
+                            });       
+                    });
+                });
         }); 
     });
+
+const btnLoadComments = document.querySelector(".btn");
+btnLoadComments.addEventListener("click", loadComments);
